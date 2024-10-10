@@ -14,6 +14,12 @@
   
   
   <dependencies>
+      <dependency>
+          <groupId>org.springframework.cloud</groupId>
+          <artifactId>spring-cloud-gateway</artifactId>
+          <version>4.1.4</version>
+          <type>pom</type>
+      </dependency>
 
     </dependencies>
 

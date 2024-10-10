@@ -12,7 +12,7 @@ import jakarta.persistence.Entity;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BusDriver extends Employee{
-    @OneToOne(mappedBy = "driverLicense")
+    @OneToOne(mappedBy = "busDriver")
     private DriverLicense driverLicense;
 
     @Override

@@ -17,7 +17,8 @@ public class DriverLicense {
     private String LicenseNumber;
     private Date releaseDate;
     private Date expiryDate;
-    @OneToOne()
+    @OneToOne
+    @JoinColumn(name = "bus_driver_id")
     BusDriver busDriver;
 
     @Override

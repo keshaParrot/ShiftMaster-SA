@@ -1,6 +1,6 @@
 package ivan.denysiuk.employeesservice.domain.entity;
 
-import ivan.denysiuk.employeesservice.domain.enumerations.AccountantQualification;
+import ivan.denysiuk.employeesservice.domain.enumeration.AccountantQualification;
 import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

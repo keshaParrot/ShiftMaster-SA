@@ -26,16 +26,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     @Query("SELECT e FROM Employee e WHERE e.id = :employeeId AND e.department = :department")
     Employee getEmployeeById(@Param("employeeId") Long id, @Param("department") String department);
     /**
-     * Get instance from database by user-provided passcode of employee and department.
-     *
-     * @param passcode of employee
-     * @param department the department of employee
-     * @return employee, or a class that extends it, by their passcode
-     */
-    @Query("SELECT e FROM Employee e WHERE e.passcode = :passcode AND e.department = :department")
-    Employee getByPasscode(@Param("passcode") String passcode, @Param("department") String department);
-
-    /**
      * Get instance from database by user-provided pesel of employee and department.
      *
      * @param pesel of employee
@@ -63,10 +53,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> searchByFullName(@Param("fullName") String fullName, @Param("department") String department);
 
     /**
-     * Count all instances from database, who's department matches the user-provided department.
+     * Count all instances on database, who's department matches the user-provided department.
      *
      * @param department the department of employees
-     * @return count of employees by department
+     * @return number of employees by department
      */
     @Query("SELECT COUNT(e) FROM Employee e WHERE e.department = :department")
     int countAll(@Param("department") String department);

@@ -2,7 +2,7 @@ package ivan.denysiuk.employeesservice.domain.entity;
 
 
 
-import ivan.denysiuk.employeesservice.domain.enumerations.TypeOfContract;
+import ivan.denysiuk.employeesservice.domain.enumeration.TypeOfContract;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,9 +33,8 @@ public class Employee {
     private double rate;
 
     private TypeOfContract typeOfContract;
-    private String email;
-    private String passcode;
-    private String password;
+
+
 
     public String getFullName(){
         return firstName+" "+lastName;
@@ -44,7 +43,7 @@ public class Employee {
     @Override
     public String toString() {
         return getClass().getSimpleName() +
-                "{id=" + id +
+                "{ id=" + id +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", pesel='" + pesel + '\'' +
@@ -52,7 +51,6 @@ public class Employee {
                 ", department='" + department + '\'' +
                 ", rate=" + rate +
                 ", typeOfContract=" + typeOfContract +
-                ", passcode='" + passcode + '\'' +
-                '}';
+                " }";
     }
 }

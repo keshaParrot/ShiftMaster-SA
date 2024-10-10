@@ -15,8 +15,7 @@ public class BusDriverShift extends Shift{
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long BusId;
-    @OneToMany
-    @JoinColumn(name = "station_id")
-    private List<BusStation> Route;
+
+    private Long Route;
 
 }

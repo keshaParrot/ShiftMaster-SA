@@ -1,20 +1,22 @@
 package ivan.denysiuk;
 
 import ivan.denysiuk.domain.dto.CargoBusDTO;
-import ivan.denysiuk.domain.entity.CargoBus;
+import ivan.denysiuk.domain.entity.*;
 import ivan.denysiuk.domain.mapper.VehicleMapperManager;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
 
 @Component
 public class Bootstrap implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
-        CargoBus cargoBus = CargoBus.builder()
+        /*CargoBus cargoBus = CargoBus.builder()
                 .id(5L)
-                .availability(true)
                 .brand("as")
                 .deployDate(LocalDateTime.now())
                 .lastTimeMaintenance(LocalDateTime.MIN)
@@ -26,6 +28,8 @@ public class Bootstrap implements CommandLineRunner {
 
         CargoBusDTO dto = VehicleMapperManager.convertEntityToDto(cargoBus);
         System.out.println(cargoBus);
-        System.out.println(dto);
+        System.out.println(dto);*/
+
+
     }
 }

@@ -16,8 +16,12 @@
   <dependencies>
       <dependency>
           <groupId>ivan.denysiuk</groupId>
-          <artifactId>app-utils</artifactId>
+          <artifactId>central-app-utils</artifactId>
           <version>1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
       </dependency>
       <dependency>
           <groupId>org.springframework.boot</groupId>
@@ -46,6 +50,10 @@
       <dependency>
           <groupId>org.spockframework</groupId>
           <artifactId>spock-core</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>org.spockframework</groupId>
+          <artifactId>spock-spring</artifactId>
       </dependency>
       <dependency>
           <groupId>org.apache.groovy</groupId>

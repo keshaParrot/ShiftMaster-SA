@@ -21,7 +21,7 @@
       </dependency>
       <dependency>
           <groupId>ivan.denysiuk</groupId>
-          <artifactId>app-utils</artifactId>
+          <artifactId>central-app-utils</artifactId>
           <version>1.0-SNAPSHOT</version>
       </dependency>
       <dependency>

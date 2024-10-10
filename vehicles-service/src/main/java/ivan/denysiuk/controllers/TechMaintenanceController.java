@@ -10,15 +10,7 @@ import org.springframework.stereotype.Controller;
 public class TechMaintenanceController {
     private final VehicleService vehicleService;
 
-    /*public ResponseEntity<?> getBySerialNumber(){
-
-    }
-    public ResponseEntity<?> getByRegistrationNumber(){
-
-    }
-    public ResponseEntity<?> getById(){
-
-    }
+    /*
     public ResponseEntity<?> getAllByNeedInspection(){
 
     }

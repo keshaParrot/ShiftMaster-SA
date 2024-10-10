@@ -5,7 +5,8 @@ import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import ivan.denysiuk.employeesservice.domain.dto.EmployeeDTO;
-import ivan.denysiuk.unswer.Result;
+import ivan.denysiuk.employeesservice.domain.mappers.*;
+import ivan.denysiuk.customClasses.Result;
 import ivan.denysiuk.employeesservice.domain.entity.Employee;
 import ivan.denysiuk.employeesservice.repository.EmployeeRepository;
 import ivan.denysiuk.employeesservice.service.interfaces.EmployeeService;
@@ -57,11 +58,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     public <T extends Employee> Result<T> getByPesel(String pesel,String department, Class<T> expectedType) {
         return getResult(() -> employeeRepository.getByPesel(pesel, department), expectedType);
     }
-
-    @Override
-    public <T extends Employee> Result<T> getByPassCode(String passcode,String department, Class<T> expectedType) {
-        return getResult(() -> employeeRepository.getByPasscode(passcode, department), expectedType);
-    }
     @Override
     public Boolean deleteById(Long id) {
         if (employeeRepository.existsById(id)) {
@@ -86,17 +82,18 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = supplier.get();
 
         if (expectedType.isInstance(employee)) {
-            return new Result<>(expectedType.cast(employee));
+            return  Result.success(expectedType.cast(employee));
         } else {
             String errorMessage = "Expected type " + expectedType.getSimpleName() + ", but received " + (employee != null ? employee.getClass().getSimpleName() : "null");
             logger.warning(errorMessage);
-            return new Result<>(errorMessage);
+            return Result.failure(errorMessage);
         }
     }
-    private EmployeeDTO convertEntityToDto(Employee employee){
-        return new EmployeeDTO();
+    private <T extends Employee> EmployeeDTO convertEntityToDto(T entity) {
+        return EmployeeMapperManager.convertEntityToDto(entity);
     }
-    private Employee convertDtoToEntity(EmployeeDTO employee){
-        return new Employee();
+
+    private <T extends EmployeeDTO> Employee convertDtoToEntity(T dto) {
+        return EmployeeMapperManager.convertDtoToEntity(dto);
     }
 }

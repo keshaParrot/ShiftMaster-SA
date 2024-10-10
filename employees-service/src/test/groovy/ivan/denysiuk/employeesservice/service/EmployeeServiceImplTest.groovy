@@ -1,7 +1,8 @@
 package ivan.denysiuk.employeesservice.service
 
-import ivan.denysiuk.employeesservice.domain.dto.EmployeeDto
+import ivan.denysiuk.employeesservice.domain.dto.EmployeeDTO
 import ivan.denysiuk.employeesservice.domain.entity.Employee
+import ivan.denysiuk.employeesservice.repository.EmployeeRepository
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Subject
@@ -9,10 +10,9 @@ import spock.lang.Subject
 class EmployeeServiceImplTest extends Specification {
 
     def employeeRepository = Mock(EmployeeRepository)
-    @Subject
-    def employeeService = new EmployeeServiceImpl(employeeRepository)
+    @Subject def employeeService = new EmployeeServiceImpl(employeeRepository)
 
-    @Shared EmployeeDto employeeDto
+    @Shared EmployeeDTO employeeDto
     @Shared List<Employee> listOfEmployee = []
 
     def setupSpec(){

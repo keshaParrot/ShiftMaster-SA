@@ -10,7 +10,13 @@ import org.springframework.stereotype.Controller;
 public class UserController{
     private final VehicleService vehicleService;
 
-    /*public ResponseEntity<?> getByAvailability(){
+    /*public ResponseEntity<?> getBySerialNumber(){
+
+    }
+    public ResponseEntity<?> getByRegistrationNumber(){
+
+    }
+    public ResponseEntity<?> getByAvailability(){
 
     }
     public ResponseEntity<?> getByLocation() {

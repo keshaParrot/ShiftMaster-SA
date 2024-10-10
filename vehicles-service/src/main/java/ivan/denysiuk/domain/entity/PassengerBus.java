@@ -12,7 +12,6 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 public class PassengerBus extends Vehicle{
 
-
     private int numberOfSeats;
 
     @Override

@@ -1,14 +1,14 @@
 package ivan.denysiuk.shiftservice.domain.entity;
 
-import ivan.denysiuk.employeesservice.domain.entity.Employee;
 import ivan.denysiuk.shiftservice.domain.ShiftDayTime;
-import ivan.denysiuk.time.HoursClass;
+import ivan.denysiuk.customClasses.HoursClass;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.Duration;
 import java.time.LocalTime;
+import java.time.MonthDay;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
@@ -29,9 +29,11 @@ public abstract class Shift {
     private LocalTime actualEndTime;
     private String breakTime;
 
-    @ManyToOne
-    @JoinColumn(name = "employee_id")
-    private Employee employee;
+    private Long employeeId;
+
+    private Long lastModifierManager;
+    private MonthDay lastTimeModified;
+
     /**
      * Calculate actual worked time of this shift
      *

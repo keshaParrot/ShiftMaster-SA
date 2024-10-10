@@ -19,10 +19,10 @@ public class VehicleMapperManager {
     }
 
 
-    public static <T extends VehicleDTO> Vehicle convertDtoToEntity(T dto) {
+    public static <T extends VehicleDTO,E extends Vehicle> E convertDtoToEntity(T dto) {
         return switch (dto) {
-            case PassengerBusDTO passengerBusDTO -> PassengerBusMapper.INSTANCE.toEntity(passengerBusDTO);
-            case CargoBusDTO cargoBusDTO -> CargoBusMapper.INSTANCE.toEntity(cargoBusDTO);
+            case PassengerBusDTO passengerBusDTO -> (E)PassengerBusMapper.INSTANCE.toEntity(passengerBusDTO);
+            case CargoBusDTO cargoBusDTO -> (E)CargoBusMapper.INSTANCE.toEntity(cargoBusDTO);
             default -> throw new IllegalArgumentException("Unknown DTO type: " + dto.getClass().getName());
         };
     }
