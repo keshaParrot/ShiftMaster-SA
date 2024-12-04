@@ -1,0 +1,8 @@
+# Ігнорування всіх файлів .properties
+*.properties
+
+# Ігнорування всіх файлів .class
+*.class
+
+# Ігнорування папки .idea (налаштування IntelliJ IDEA)
+.idea/
