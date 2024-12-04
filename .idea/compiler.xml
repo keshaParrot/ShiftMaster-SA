@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="busStation-service" />
+        <module name="reports-service" />
+        <module name="central-app-utils" />
+        <module name="security-service" />
+        <module name="api-gateway" />
+        <module name="salaries-service" />
+        <module name="vehicles-service" />
+        <module name="employees-service" />
+        <module name="suggestions-service" />
+        <module name="shifts-service" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="app-utils" target="21" />
+      <module name="BusStation-service" target="1.7" />
+      <module name="employees-service (1)" target="1.7" />
+      <module name="employees-service (2)" target="1.5" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

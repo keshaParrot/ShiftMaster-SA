@@ -1,5 +1,6 @@
 package ivan.denysiuk.repository;
 
+import ivan.denysiuk.domain.entity.BusLocation;
 import ivan.denysiuk.domain.entity.Vehicle;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -59,5 +60,12 @@ public interface VehicleRepository extends JpaRepository<Vehicle,Long> {
      */
     @Query("SELECT CASE WHEN COUNT(v) > 0 THEN true ELSE false END FROM Vehicle v WHERE v.busLocation.hangar = :hangar AND v.busLocation.platform = :platform")
     boolean isLocationOccupied(@Param("hangar") int hangar, @Param("platform") int platform);
+    /**
+     * Get All location which is occupied by a vehicle.
+     *
+     * @return List of Bus Location, with now is unavailable.
+     */
 
+    @Query("SELECT v.busLocation FROM Vehicle v WHERE v.busLocation IS NOT NULL")
+    List<BusLocation> findAllOccupiedLocations();
 }

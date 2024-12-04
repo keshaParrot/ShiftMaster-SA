@@ -46,10 +46,6 @@ public interface VehicleService {
             Integer needInspection,
             VehicleType type,
             Long[] vehiclesIds);
-    Result<BusLocation> getLocationByBusId(Long id);
-    Result<Boolean> changeBusLocation(BusLocation location, Long vehicleId);
-    Result<Boolean> changeBusLocation(int hangar, int platform, Long vehicleId);
-    Result<Boolean> isLocationOccupied(BusLocation location);
 
     int countAll();
     int countAllServiceable();

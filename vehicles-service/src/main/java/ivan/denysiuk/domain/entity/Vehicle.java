@@ -120,15 +120,21 @@ public abstract class Vehicle {
             1 if Vehicle need Quarterly Maintenance
             2 if Vehicle need Annual Maintenance
      */
-    public int isNeedInspection(){
-        if(status == VehicleStatus.INACTIVE) return 0;
+    public int isNeedInspection() {
+        if (status == VehicleStatus.INACTIVE) return 0;
 
-        LocalDate nextAnnualMaintenance = getNextAnnualMaintenance();
+        LocalDate now = LocalDate.now();
         LocalDate nextQuarterlyMaintenance = getNextQuarterlyMaintenance();
+        LocalDate nextAnnualMaintenance = getNextAnnualMaintenance();
 
-        if (LocalDate.now().isBefore(nextQuarterlyMaintenance)) return 1;
-        if (LocalDate.now().isBefore(nextAnnualMaintenance)) return 2;
+        if (now.isAfter(nextAnnualMaintenance) || now.isEqual(nextAnnualMaintenance)) {
+            return 2;
+        }
+        if (now.isAfter(nextQuarterlyMaintenance) || now.isEqual(nextQuarterlyMaintenance)) {
+            return 1;
+        }
         return 0;
     }
+
 
 }

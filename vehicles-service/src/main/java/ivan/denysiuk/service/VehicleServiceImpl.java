@@ -3,14 +3,16 @@ package ivan.denysiuk.service;
 
 import ivan.denysiuk.customClasses.OptionalCollector;
 import ivan.denysiuk.customClasses.Result;
+import ivan.denysiuk.domain.entity.CargoBus;
+import ivan.denysiuk.domain.entity.PassengerBus;
 import ivan.denysiuk.domain.enumeration.VehicleType;
 import ivan.denysiuk.domain.dto.VehicleDTO;
-import ivan.denysiuk.domain.entity.BusLocation;
 import ivan.denysiuk.domain.entity.Reserved;
 import ivan.denysiuk.domain.entity.Vehicle;
 import ivan.denysiuk.domain.mapper.VehicleMapperManager;
 import ivan.denysiuk.repository.VehicleRepository;
 import ivan.denysiuk.service.interfaces.VehicleService;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +36,12 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public <T extends VehicleDTO, E extends Vehicle> Result<E> saveToSystem(T vehicle) {
         try {
+            Optional<Vehicle> existingVehicle = vehicleRepository.getBySerialNumber(vehicle.getSerialNumber());
+            if (existingVehicle.isPresent()) {
+                Long existingId = existingVehicle.get().getId();
+                logger.warn("Vehicle with serial number '{}' already exists with ID: {}", vehicle.getSerialNumber(), existingId);
+                return Result.failure("Vehicle with registration number: '" + vehicle.getSerialNumber() + "' already exists with ID: " + existingId);
+            }
             E convertedVehicle = convertDtoToEntity(vehicle);
             E savedVehicle = vehicleRepository.save(convertedVehicle);
             logger.info("Vehicle was saved successfully: {}", savedVehicle);
@@ -53,10 +61,10 @@ public class VehicleServiceImpl implements VehicleService {
                 convertedVehicle.setId(id);
                 savedVehicle = vehicleRepository.save(convertedVehicle);
                 logger.info("Vehicle was updated successfully: {}", savedVehicle);
-                return Result.success(savedVehicle,"Vehicle was saved successfully");
+                return Result.success(savedVehicle,"Vehicle was updated successfully");
             }
             else {
-                return Result.failure("Vehicle with provided id="+id +" does not exist");
+                return Result.failure("Vehicle with provided id: "+id +" does not exist");
             }
         } catch (Exception e) {
             logger.error("Error while saving the vehicle: {}", e.getMessage(), e);
@@ -68,7 +76,7 @@ public class VehicleServiceImpl implements VehicleService {
     public <T extends VehicleDTO, E extends Vehicle> Result<E> patchById(T vehicle, Long id) {
         Optional<Vehicle> queriedVehicle = vehicleRepository.getVehicleById(id);
         if(queriedVehicle.isEmpty()){
-            return Result.failure("Vehicle with provided id="+id +" does not exist");
+            return Result.failure("Vehicle with provided id: "+id +" does not exist");
         }
 
         if(StringUtils.hasText(vehicle.getSerialNumber())){
@@ -101,60 +109,125 @@ public class VehicleServiceImpl implements VehicleService {
         E updatedVehicle = (E) vehicleRepository.save(queriedVehicle.get());
         return Result.success(updatedVehicle,"Vehicle was updated successfully");
     }
-
     @Override
     public Result<Boolean> addReservationToVehicle(Long id, Reserved reserved) {
         Optional<Vehicle> queriedVehicle = vehicleRepository.getVehicleById(id);
         if(queriedVehicle.isEmpty()){
-            return Result.failure("Vehicle with provided id="+id +" does not exist");
+            return Result.failure("Vehicle with provided id: "+id +" does not exist");
         }
-        int isAvailable = queriedVehicle.get().isAvailable(reserved.getDate(),reserved.getFrom(),reserved.getTo())
+        int isAvailable = queriedVehicle.get().isAvailable(reserved.getDate(),reserved.getFrom(),reserved.getTo());
         if(isAvailable == 0){
             queriedVehicle.get().getWhenReserved().add(reserved);
-            Vehicle updatedVehicle = vehicleRepository.save(queriedVehicle.get());
-            return Result.success(true,"reservation on date [" + reserved.getDate() + "] [" + reserved.getFrom()+"-"+reserved.getTo() +"] added successfully");
+            vehicleRepository.save(queriedVehicle.get());
+            return Result.success(true,"the reservation of the bus: "+queriedVehicle.get().getRegistrationNumber()+", on date " + reserved.getDate() + ", in the hours " + reserved.getFrom()+"-"+reserved.getTo() +" was added successfully");
         }
         else if (isAvailable == 2){
             return Result.failure("Between shifts Vehicle must to have 15 minutes break");
         }
         return Result.failure("Vehicle already have reservation on this time");
     }
-
     @Override
     public Result<Boolean> deleteReservationInVehicle(Long id, Reserved reserved) {
-        return null;
+        Vehicle queriedVehicle = vehicleRepository.getVehicleById(id).orElse(null);
+        if(queriedVehicle == null){
+            return Result.failure("Vehicle with provided id: "+id +" does not exist");
+        }
+        if(queriedVehicle.getWhenReserved()!=null && queriedVehicle.getWhenReserved().contains(reserved)){
+            queriedVehicle.getWhenReserved().remove(reserved);
+            vehicleRepository.save(queriedVehicle);
+            return Result.success(true,"the reservation of the bus: "+queriedVehicle.getRegistrationNumber()+", on date " + reserved.getDate() + ", in the hours " + reserved.getFrom()+"-"+reserved.getTo() +" was deleted successfully");
+        }
+        return Result.failure("the bus: "+queriedVehicle.getRegistrationNumber()+", dont have reservation on date " + reserved.getDate() + ", in the hours " + reserved.getFrom()+"-"+reserved.getTo());
     }
-
+    @Transactional
     @Override
-    public Result<Boolean> addReservationsToVehicle(Long id, List<Reserved> reserved) {
-        return Result.failure(null);
-    }
+    public Result<Boolean> addReservationsToVehicle(Long id, List<Reserved> reservedList) {
+        Optional<Vehicle> queriedVehicle = vehicleRepository.getVehicleById(id);
+        if (queriedVehicle.isEmpty()) {
+            return Result.failure("Vehicle with provided id: " + id + " does not exist");
+        }
 
+        Vehicle vehicle = queriedVehicle.get();
+
+        for (Reserved reserved : reservedList) {
+            int isAvailable = vehicle.isAvailable(reserved.getDate(), reserved.getFrom(), reserved.getTo());
+            if (isAvailable != 0) {
+                if (isAvailable == 2) {
+                    return Result.failure("Between shifts Vehicle must have 15 minutes break for reservation on date ["
+                            + reserved.getDate() + "] [" + reserved.getFrom() + "-" + reserved.getTo() + "]");
+                }
+                return Result.failure("Vehicle already has a reservation on date ["
+                        + reserved.getDate() + "] [" + reserved.getFrom() + "-" + reserved.getTo() + "]");
+            }
+            vehicle.getWhenReserved().add(reserved);
+        }
+
+        vehicleRepository.save(vehicle);
+        return Result.success(true, "All reservations were added successfully");
+    }
+    @Transactional
     @Override
-    public Result<Boolean> deleteReservationsInVehicle(Long id, List<Reserved> reserved) {
-        return null;
-    }
+    public Result<Boolean> deleteReservationsInVehicle(Long id, List<Reserved> reservedList) {
+        Optional<Vehicle> queriedVehicle = vehicleRepository.getVehicleById(id);
 
+        if (queriedVehicle.isEmpty()) {
+            return Result.failure("Vehicle with provided id: " + id + " does not exist");
+        }
+
+        Vehicle vehicle = queriedVehicle.get();
+
+        for (Reserved reserved : reservedList) {
+            if (!vehicle.getWhenReserved().contains(reserved)) {
+                return Result.failure("The bus with registration number " + vehicle.getRegistrationNumber() +
+                        " does not have a reservation on date [" + reserved.getDate() + "] [" +
+                        reserved.getFrom() + "-" + reserved.getTo() + "]");
+            }
+        }
+
+        vehicle.getWhenReserved().removeAll(reservedList);
+        vehicleRepository.save(vehicle);
+
+        return Result.success(true, "All reservations have been deleted successfully");
+    }
     @Override
     public <T extends Vehicle> Result<T> getById(Long id, Class<T> expectedType) {
-        /* Employee employee = employeeRepository.getEmployeeById(id);
-        if (expectedType.isInstance(employee) && expectedType.isAssignableFrom(employee.getClass())) {
-            return expectedType.cast(employee);
-        } else {
-            throw new IllegalArgumentException("expected type " + expectedType.getSimpleName() + ", but received  " + employee.getClass().getSimpleName());
+        Vehicle queriedVehicle = vehicleRepository.getVehicleById(id).orElse(null);
+        if(queriedVehicle == null){
+            return Result.failure("Vehicle with provided id: " + id + " does not exist");
         }
-        */
+        if(expectedType.isInstance(queriedVehicle) && expectedType.isAssignableFrom(queriedVehicle.getClass())){
+            return (Result<T>) Result.success(queriedVehicle);
+        }
+        else {
+            return Result.failure("An error occurred when receiving a bus of the " + expectedType.getSimpleName() + ", the bus with this identifier is a " + queriedVehicle.getClass().getSimpleName());
+        }
     }
-
     @Override
     public <T extends Vehicle> Result<T> getByRegistrationNumber(String registrationNumber, Class<T> expectedType) {
-        return null;
+        Vehicle queriedVehicle = vehicleRepository.getByRegistrationNumber(registrationNumber).orElse(null);
+        if(queriedVehicle == null){
+            return Result.failure("Vehicle with provided registration number: " + registrationNumber + " does not exist");
+        }
+        if(expectedType.isInstance(queriedVehicle) && expectedType.isAssignableFrom(queriedVehicle.getClass())){
+            return (Result<T>) Result.success(queriedVehicle);
+        }
+        else {
+            return Result.failure("An error occurred when receiving a bus of the " + expectedType.getSimpleName() + ", the bus with this identifier is a " + queriedVehicle.getClass().getSimpleName());
+        }
     }
     @Override
     public <T extends Vehicle> Result<T> getBySerialNumber(String serialNumber, Class<T> expectedType) {
-        return null;
+        Vehicle queriedVehicle = vehicleRepository.getBySerialNumber(serialNumber).orElse(null);
+        if(queriedVehicle == null){
+            return Result.failure("Vehicle with provided serial number: " + serialNumber + " does not exist");
+        }
+        if(expectedType.isInstance(queriedVehicle) && expectedType.isAssignableFrom(queriedVehicle.getClass())){
+            return (Result<T>) Result.success(queriedVehicle);
+        }
+        else {
+            return Result.failure("An error occurred when receiving a bus of the " + expectedType.getSimpleName() + ", the bus with this identifier is a " + queriedVehicle.getClass().getSimpleName());
+        }
     }
-    //TODO we need to add handle all scenario when user provide or not args
     @Override
     public Stream<Vehicle> filterByAvailability(Stream<Vehicle> vehicles, LocalDate date, LocalTime startTime, LocalTime endTime) {
         return vehicles.filter(vehicle -> vehicle.isAvailable(date,startTime,endTime) == 0);
@@ -169,9 +242,15 @@ public class VehicleServiceImpl implements VehicleService {
     }
     @Override
     public Stream<Vehicle> filterByType(Stream<Vehicle> vehicles, VehicleType type) {
-        return Stream.empty();
+        return vehicles.filter(vehicle -> {
+            if (type == VehicleType.PASSENGER && vehicle instanceof PassengerBus) {
+                return true;
+            } else if (type == VehicleType.CARGO && vehicle instanceof CargoBus) {
+                return true;
+            }
+            return false;
+        });
     }
-
     @Override
     public Optional<List<Vehicle>> getAllBy(
             LocalDate date,
@@ -207,26 +286,12 @@ public class VehicleServiceImpl implements VehicleService {
 
         return vehicleStream.collect(OptionalCollector.toOptionalList());
     }
-
-    @Override
-    public Result<BusLocation> getLocationByBusId(Long id) {
-        return null;
-    }
-    //TODO we need to check is bus have a shift on current time, and then change location
-    @Override
-    public Result<Boolean> changeBusLocation(BusLocation location, Long vehicleId) {
-        return Result.failure(null);
-    }
-    @Override
-    public Result<Boolean> changeBusLocation(int hangar, int platform, Long vehicleId) {
-        return Result.failure(null);
-    }
-    @Override
-    public Result<Boolean> isLocationOccupied(BusLocation location) {
-        return Result.failure(null);
-    }
     @Override
     public boolean deleteById(Long id) {
+        if(vehicleRepository.existsById(id)){
+            vehicleRepository.deleteById(id);
+            return true;
+        }
         return false;
     }
     @Override
@@ -245,9 +310,6 @@ public class VehicleServiceImpl implements VehicleService {
                 .filter(vehicle -> vehicle.isNeedInspection() == 0)
                 .count();
     }
-    /*private <T extends Vehicle, E extends VehicleDTO> E convertEntityToDto(T entity) {
-        return  VehicleMapperManager.convertEntityToDto(entity);
-    }*/
     private <T extends VehicleDTO,E extends Vehicle> E convertDtoToEntity(T dto) {
         return VehicleMapperManager.convertDtoToEntity(dto);
     }
