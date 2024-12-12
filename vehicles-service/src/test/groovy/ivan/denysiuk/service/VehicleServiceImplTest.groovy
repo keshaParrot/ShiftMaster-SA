@@ -4,6 +4,8 @@ import ivan.denysiuk.customClasses.OptionalCollector
 import ivan.denysiuk.customClasses.Result
 import ivan.denysiuk.domain.dto.CargoBusDTO
 import ivan.denysiuk.domain.dto.PassengerBusDTO
+import ivan.denysiuk.domain.dto.RequestCreateCargoBus
+import ivan.denysiuk.domain.dto.RequestCreatePassengerBus
 import ivan.denysiuk.domain.dto.VehicleDTO
 import ivan.denysiuk.domain.entity.BusLocation
 import ivan.denysiuk.domain.entity.CargoBus
@@ -25,19 +27,18 @@ class VehicleServiceImplTest extends Specification {
 
     def "SaveToSystem - successful addition Passenger bus"() {
         given:
-        def passengerBusDTO = PassengerBusDTO.builder()
-                .serialNumber("123456")
-                .registrationNumber("AB1234CD")
-                .brand("Volvo")
-                .numberOfSeats(50)
-                .build()
+        def passengerBusDTO = new RequestCreatePassengerBus(
+                serialNumber: "123456",
+                registrationNumber: "AB1234CD",
+                brand: "Volvo",
+                numberOfSeats: 50,
+                busLocation: new BusLocation()
+        )
 
         vehicleRepository.getBySerialNumber("123456") >> Optional.empty()
 
-        def savedVehicle = Mock(Vehicle) {
-            getId() >> 1L
-        }
-
+        def savedVehicle = Mock(Vehicle)
+        savedVehicle.getId() >> 1L
         vehicleRepository.save(_ as Vehicle) >> savedVehicle
 
         when:
@@ -48,21 +49,20 @@ class VehicleServiceImplTest extends Specification {
         result.getValue() == savedVehicle
         result.getMessage() == "Vehicle was saved successfully"
     }
+
     def "SaveToSystem - successful addition Cargo bus"() {
         given:
-        def cargoBusDTO = CargoBusDTO.builder()
-                .serialNumber("789012")
-                .registrationNumber("XY5678ZT")
-                .brand("MAN")
-                .loadCapacity("10 tons")
-                .build()
+        def cargoBusDTO = new RequestCreateCargoBus(
+                serialNumber: "789012",
+                registrationNumber: "XY5678ZT",
+                brand: "MAN",
+                loadCapacity: "10 tons"
+        )
 
         vehicleRepository.getBySerialNumber("789012") >> Optional.empty()
 
-        def savedVehicle = Mock(Vehicle) {
-            getId() >> 2L
-        }
-
+        def savedVehicle = Mock(Vehicle)
+        savedVehicle.getId() >> 2L
         vehicleRepository.save(_ as Vehicle) >> savedVehicle
 
         when:
@@ -76,17 +76,15 @@ class VehicleServiceImplTest extends Specification {
 
     def "SaveToSystem - failure addition vehicles (Vehicle exist)"() {
         given:
-        def passengerBusDTO = PassengerBusDTO.builder()
-                .serialNumber("123456")
-                .registrationNumber("AB1234CD")
-                .brand("Volvo")
-                .numberOfSeats(50)
-                .build()
+        def passengerBusDTO = new RequestCreatePassengerBus(
+                serialNumber: "123456",
+                registrationNumber: "AB1234CD",
+                brand: "Volvo",
+                numberOfSeats: 50
+        )
 
-        def existingVehicle = Mock(Vehicle) {
-            getId() >> 3L
-        }
-
+        def existingVehicle = Mock(Vehicle)
+        existingVehicle.getId() >> 3L
         vehicleRepository.getBySerialNumber("123456") >> Optional.of(existingVehicle)
 
         when:
@@ -255,7 +253,7 @@ class VehicleServiceImplTest extends Specification {
 
         then:
         !result.isSuccess()
-        result.getMessage() == "Vehicle with provided id=3 does not exist"
+        result.getMessage() == "Vehicle with provided id: 3 does not exist"
     }
     def "deleteReservationInVehicle - failure deleting, vehicle dont have reservation on this time"(){
         given:
@@ -271,6 +269,7 @@ class VehicleServiceImplTest extends Specification {
         result.getMessage() == "the bus: CD9876EF, dont have reservation on date 2024-01-12, in the hours 08:00-10:00"
     }
     //TODO we need to implement theses methods
+
     def "addReservationsInVehicle"(){}
     def "deleteReservationsInVehicle"(){}
 

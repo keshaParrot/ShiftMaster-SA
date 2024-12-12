@@ -16,10 +16,7 @@ public class UserController{
     public ResponseEntity<?> getByRegistrationNumber(){
 
     }
-    public ResponseEntity<?> getByAvailability(){
-
-    }
-    public ResponseEntity<?> getByLocation() {
+    public ResponseEntity<?> getBy(){
 
     }
     public ResponseEntity<?> getById(){

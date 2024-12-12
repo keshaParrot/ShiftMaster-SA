@@ -4,6 +4,7 @@ package ivan.denysiuk.service.interfaces;
 
 
 import ivan.denysiuk.customClasses.Result;
+import ivan.denysiuk.domain.dto.RequestCreateVehicle;
 import ivan.denysiuk.domain.enumeration.VehicleType;
 import ivan.denysiuk.domain.dto.VehicleDTO;
 import ivan.denysiuk.domain.entity.BusLocation;
@@ -18,7 +19,7 @@ import java.util.stream.Stream;
 
 public interface VehicleService {
 
-    <T extends VehicleDTO, E extends Vehicle> Result<E> saveToSystem(T vehicle);
+    Result<Vehicle> saveToSystem(RequestCreateVehicle vehicle);
     <T extends VehicleDTO, E extends Vehicle> Result<E> updateById(T vehicle, Long id);
     <T extends VehicleDTO, E extends Vehicle> Result<E> patchById(T vehicle, Long id);
     <T extends Vehicle> Result<T> getById(Long id, Class<T> expectedType);

@@ -15,7 +15,7 @@ import java.util.Map;
 @Controller
 @AllArgsConstructor
 public class LocationController {
-    public final static String URL_PATH = "api/v1/vehicles/Location";
+    public final static String URL_PATH = "/api/v1/vehicles/Location";
     private final LocationService locationService;
 
     @GetMapping(URL_PATH + "/getAllAvailable")
@@ -23,10 +23,10 @@ public class LocationController {
         Map<Integer, List<Integer>> availableSpots = locationService.getAvailableParkingSpots();
         return ResponseEntity.ok(availableSpots);
     }
-    @GetMapping("/getLocation")
-    public ResponseEntity<Result<BusLocation>> getLocationByVehicleId(@RequestParam Long busId) {
+    @GetMapping(URL_PATH + "/getLocation")
+    public ResponseEntity<Result<BusLocation>> getLocationByVehicleId(@RequestParam("busId") Long Id) {
         try {
-            Result<BusLocation> result = locationService.getLocationByVehicleId(busId);
+            Result<BusLocation> result = locationService.getLocationByVehicleId(Id);
 
             if (result.hasError()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
@@ -39,9 +39,9 @@ public class LocationController {
         }
     }
     @PutMapping(URL_PATH + "/park")
-    public ResponseEntity<Result<Boolean>> parkVehicle(@RequestParam Long busId ,
-                                                       @RequestParam int hangar,
-                                                       @RequestParam int platform) {
+    public ResponseEntity<Result<Boolean>> parkVehicle(@RequestParam("busId") Long busId ,
+                                                       @RequestParam("hangar") int hangar,
+                                                       @RequestParam("platform") int platform) {
         try {
             Result<Boolean> result = locationService.parkVehicleOnHangar(busId, hangar, platform);
 
@@ -56,9 +56,9 @@ public class LocationController {
         }
     }
 
-    @GetMapping("/isAvailable")
-    public ResponseEntity<String> isSpotAvailable(@RequestParam int hangar,
-                                                    @RequestParam int platform) {
+    @GetMapping(URL_PATH + "/isAvailable")
+    public ResponseEntity<String> isSpotAvailable(@RequestParam("hangar") int hangar,
+                                                    @RequestParam("platform") int platform) {
 
         boolean locationExistResult = locationService.isSpotAvailable(hangar,platform);
 

@@ -3,6 +3,7 @@ package ivan.denysiuk.service;
 
 import ivan.denysiuk.customClasses.OptionalCollector;
 import ivan.denysiuk.customClasses.Result;
+import ivan.denysiuk.domain.dto.RequestCreateVehicle;
 import ivan.denysiuk.domain.entity.CargoBus;
 import ivan.denysiuk.domain.entity.PassengerBus;
 import ivan.denysiuk.domain.enumeration.VehicleType;
@@ -34,7 +35,7 @@ public class VehicleServiceImpl implements VehicleService {
     private static final Logger logger = LoggerFactory.getLogger(VehicleServiceImpl.class);
 
     @Override
-    public <T extends VehicleDTO, E extends Vehicle> Result<E> saveToSystem(T vehicle) {
+    public Result<Vehicle> saveToSystem(RequestCreateVehicle vehicle) {
         try {
             Optional<Vehicle> existingVehicle = vehicleRepository.getBySerialNumber(vehicle.getSerialNumber());
             if (existingVehicle.isPresent()) {
@@ -42,8 +43,17 @@ public class VehicleServiceImpl implements VehicleService {
                 logger.warn("Vehicle with serial number '{}' already exists with ID: {}", vehicle.getSerialNumber(), existingId);
                 return Result.failure("Vehicle with registration number: '" + vehicle.getSerialNumber() + "' already exists with ID: " + existingId);
             }
-            E convertedVehicle = convertDtoToEntity(vehicle);
-            E savedVehicle = vehicleRepository.save(convertedVehicle);
+
+            Vehicle vehicleToSave = VehicleFactory.createVehicle(vehicle);
+            if (vehicleToSave == null) {
+                return Result.failure("Unsupported vehicle type");
+            }
+
+            vehicleToSave.setDeployDate(LocalDate.now());
+            vehicleToSave.setLastQuarterlyMaintenance(LocalDate.now());
+            vehicleToSave.setLastAnnualMaintenance(LocalDate.now());
+
+            Vehicle savedVehicle = vehicleRepository.save(vehicleToSave);
             logger.info("Vehicle was saved successfully: {}", savedVehicle);
             return Result.success(savedVehicle,"Vehicle was saved successfully");
         } catch (Exception e) {
@@ -75,39 +85,49 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public <T extends VehicleDTO, E extends Vehicle> Result<E> patchById(T vehicle, Long id) {
         Optional<Vehicle> queriedVehicle = vehicleRepository.getVehicleById(id);
+        int updateCounter = 0;
         if(queriedVehicle.isEmpty()){
             return Result.failure("Vehicle with provided id: "+id +" does not exist");
         }
 
         if(StringUtils.hasText(vehicle.getSerialNumber())){
             queriedVehicle.get().setSerialNumber(vehicle.getSerialNumber());
+            updateCounter++;
         }
         if(StringUtils.hasText(vehicle.getRegistrationNumber())){
             queriedVehicle.get().setRegistrationNumber(vehicle.getRegistrationNumber());
+            updateCounter++;
         }
         if(StringUtils.hasText(vehicle.getBrand())){
             queriedVehicle.get().setBrand(vehicle.getBrand());
+            updateCounter++;
         }
         if(vehicle.getDeployDate() != null){
             queriedVehicle.get().setDeployDate(vehicle.getDeployDate());
+            updateCounter++;
         }
         if(vehicle.getLastAnnualMaintenance() != null){
             queriedVehicle.get().setLastAnnualMaintenance(vehicle.getLastAnnualMaintenance());
+            updateCounter++;
         }
         if(vehicle.getLastQuarterlyMaintenance() != null){
             queriedVehicle.get().setLastQuarterlyMaintenance(vehicle.getLastQuarterlyMaintenance());
+            updateCounter++;
         }
         if(vehicle.getStatus() != null){
             queriedVehicle.get().setStatus(vehicle.getStatus());
+            updateCounter++;
         }
         if(vehicle.getWhenReserved() != null && !vehicle.getWhenReserved().isEmpty()) {
             queriedVehicle.get().setWhenReserved(vehicle.getWhenReserved());
+            updateCounter++;
         }
         if(vehicle.getBusLocation() != null){
             queriedVehicle.get().setBusLocation(vehicle.getBusLocation());
+            updateCounter++;
         }
         E updatedVehicle = (E) vehicleRepository.save(queriedVehicle.get());
-        return Result.success(updatedVehicle,"Vehicle was updated successfully");
+        return Result.success(updatedVehicle,"Vehicle was updated successfully with: "+updateCounter+" values");
     }
     @Override
     public Result<Boolean> addReservationToVehicle(Long id, Reserved reserved) {

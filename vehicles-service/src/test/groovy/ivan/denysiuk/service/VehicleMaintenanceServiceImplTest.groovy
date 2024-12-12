@@ -31,6 +31,98 @@ class VehicleMaintenanceServiceImplTest extends Specification {
         2 * maintenanceMessageRepository.save(_)
     }
 
+    def "getAllBy - should return all messages when status is null"() {
+        given:
+        def messages = [
+                new MaintenanceMessage(id: 1, status: MessageStatus.OPEN, message: "Check engine"),
+                new MaintenanceMessage(id: 2, status: MessageStatus.CLOSED, message: "Oil changed")
+        ]
+        maintenanceMessageRepository.findAll() >> messages
+
+        when:
+        def result = vehicleMaintenanceService.getAllBy(null)
+
+        then:
+        result.isPresent()
+        result.get() == messages
+    }
+
+    def "getAllBy - should return only OPEN messages when status is OPEN"() {
+        given:
+        def messages = [
+                new MaintenanceMessage(id: 1, status: MessageStatus.OPEN, message: "Check engine"),
+                new MaintenanceMessage(id: 2, status: MessageStatus.CLOSED, message: "Oil changed"),
+                new MaintenanceMessage(id: 3, status: MessageStatus.OPEN, message: "Brake inspection")
+        ]
+        maintenanceMessageRepository.findAll() >> messages
+
+        when:
+        def result = vehicleMaintenanceService.getAllBy(MessageStatus.OPEN)
+
+        then:
+        result.isPresent()
+        result.get().size() == 2
+        result.get().every { it.status == MessageStatus.OPEN }
+    }
+
+    def "getAllBy - should return only CLOSED messages when status is CLOSED"() {
+        given:
+        def messages = [
+                new MaintenanceMessage(id: 1, status: MessageStatus.OPEN, message: "Check engine"),
+                new MaintenanceMessage(id: 2, status: MessageStatus.CLOSED, message: "Oil changed"),
+                new MaintenanceMessage(id: 3, status: MessageStatus.CLOSED, message: "Tire replacement")
+        ]
+        maintenanceMessageRepository.findAll() >> messages
+
+        when:
+        def result = vehicleMaintenanceService.getAllBy(MessageStatus.CLOSED)
+
+        then:
+        result.isPresent()
+        result.get().size() == 2
+        result.get().every { it.status == MessageStatus.CLOSED }
+    }
+
+    def "getAllBy - should return empty optional when no messages match the status"() {
+        given:
+        def messages = [
+                new MaintenanceMessage(id: 1, status: MessageStatus.OPEN, message: "Check engine")
+        ]
+        maintenanceMessageRepository.findAll() >> messages
+
+        when:
+        def result = vehicleMaintenanceService.getAllBy(MessageStatus.CLOSED)
+
+        then:
+        !result.isPresent()
+
+    }
+
+    def "getById - should return success result when message exists"() {
+        given:
+        def message = new MaintenanceMessage(id: 1, status: MessageStatus.OPEN, message: "Check engine")
+        maintenanceMessageRepository.findById(1L) >> Optional.of(message)
+
+        when:
+        def result = vehicleMaintenanceService.getById(1L)
+
+        then:
+        result.isSuccess()
+        result.value == message
+    }
+
+    def "getById - should return failure result when message does not exist"() {
+        given:
+        maintenanceMessageRepository.findById(2L) >> Optional.empty()
+
+        when:
+        def result = vehicleMaintenanceService.getById(2L)
+
+        then:
+        result.hasError()
+        result.getMessage() == "Message with id: 2 not found"
+    }
+
     def "test closeMessage when message does not exist"() {
         given:
         Long id = 1L
